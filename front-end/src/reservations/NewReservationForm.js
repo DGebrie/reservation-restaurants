@@ -1,9 +1,26 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useHistory } from "react-router-dom";
+import { createReservation } from "../utils/api.js";
 
 export default function NewReservationForm() {
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    mobile_number: "",
+    reservation_date: "",
+    reservation_time: "",
+    people: 0,
+  });
+  const history = useHistory();
+
+  function handleChange({ target }) {
+    setFormData({ ...formData, [target.name]: target.value });
+  }
+
   async function submitHandler(e) {
     e.preventDefault();
+
+    const abortController = new AbortController();
 
     const newReservation = {
       first_name: e.target.first_name.value,
@@ -12,17 +29,18 @@ export default function NewReservationForm() {
       reservation_date: e.target.reservation_date.value,
       reservation_time: e.target.reservation_time.value,
       people: e.target.people.value,
-      created_at: e.target.reservation_time.value,
-      updated_at: e.target.reservation_time.value,
+      created_at: e.target.reservation_date.value,
+      updated_at: e.target.reservation_date.value,
     };
 
-    console.log(newReservation);
-    // try {
-    //   await createCard(deckId, card);
-    //   alert("Success");
-    // } catch (error) {
-    //   console.log(error);
-    // }
+    try {
+      await createReservation(newReservation, abortController.signal);
+      history.push("/dashboard");
+    } catch (error) {
+      console.log(error);
+    }
+
+    history.push(`/dashboard?date=${formData.reservation_date}`);
   }
   return (
     <>
@@ -34,6 +52,8 @@ export default function NewReservationForm() {
                 First Name
               </label>
               <input
+                onChange={handleChange}
+                value={formData.first_name}
                 type="text"
                 name="first_name"
                 id="first_name"
@@ -47,6 +67,8 @@ export default function NewReservationForm() {
                 Last Name
               </label>
               <input
+                onChange={handleChange}
+                value={formData.last_name}
                 type="text"
                 name="last_name"
                 id="last_name"
@@ -62,10 +84,12 @@ export default function NewReservationForm() {
               Mobile Number
             </label>
             <input
+              onChange={handleChange}
+              value={formData.mobile_number}
               name="mobile_number"
-              type="text"
+              type="tel"
               className="form-control"
-              id="phone-number"
+              id="mobile_number"
               placeholder="XXX-XXX-XXXX"
             />
           </div>
@@ -75,6 +99,8 @@ export default function NewReservationForm() {
               Date of reservation
             </label>
             <input
+              onChange={handleChange}
+              value={formData.reservation_date}
               name="reservation_date"
               type="date"
               id="reservation_date"
@@ -90,13 +116,28 @@ export default function NewReservationForm() {
             >
               Time of reservation
             </label>
-            <input type="time" id="reservation_time" className="form-control" />
+            <input
+              onChange={handleChange}
+              value={formData.reservation_time}
+              name="reservation_time"
+              type="time"
+              id="reservation_time"
+              className="form-control"
+            />
           </div>
 
           <div>
             <label htmlFor="people">Party Size(1-10):</label>
 
-            <input type="number" id="people" name="people" min="1" max="10" />
+            <input
+              onChange={handleChange}
+              value={formData.people}
+              type="number"
+              id="people"
+              name="people"
+              min="1"
+              max="10"
+            />
           </div>
 
           <div
@@ -108,7 +149,12 @@ export default function NewReservationForm() {
               Submit
             </button>
 
-            <Link to="/" type="button" className="btn btn-danger">
+            <Link
+              to="/"
+              className="btn btn-danger"
+              type="button"
+              onClick={history.goBack}
+            >
               Cancel
             </Link>
           </div>

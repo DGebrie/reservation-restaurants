@@ -3,12 +3,12 @@ exports.up = function (knex) {
     table.increments("reservation_id").primary();
     table.string("first_name");
     table.string("last_name");
-    table.string("mmobile_number");
+    table.string("mobile_number");
     table.date("reservation_date");
     table.time("reservation_time");
     table.integer("people");
-    table.timestamps("created_at");
-    table.timestamps("updated_at");
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
   });
 };
 

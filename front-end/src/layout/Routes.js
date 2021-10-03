@@ -5,6 +5,8 @@ import Dashboard from "../dashboard/Dashboard";
 import NotFound from "./NotFound";
 import { today } from "../utils/date-time";
 import NewReservationForm from "../reservations/NewReservationForm";
+import useQuery from "../utils/useQuery";
+import EditReservation from "../reservations/EditReservation";
 
 /**
  * Defines all the routes for the application.
@@ -14,6 +16,11 @@ import NewReservationForm from "../reservations/NewReservationForm";
  * @returns {JSX.Element}
  */
 function Routes() {
+  const query = useQuery();
+  const date = query.get("date");
+
+  console.log(date);
+
   return (
     <Switch>
       <Route exact={true} path="/">
@@ -26,7 +33,10 @@ function Routes() {
         <NewReservationForm />
       </Route>
       <Route path="/dashboard">
-        <Dashboard date={today()} />
+        <Dashboard date={date ? date : today()} />
+      </Route>
+      <Route exact={true} path="/reservations/edit">
+        <EditReservation />
       </Route>
       <Route>
         <NotFound />
