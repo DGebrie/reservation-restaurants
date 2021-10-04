@@ -50,6 +50,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "moment": "^2.29.1",
+    "react-day-picker": "^7.4.10",
     "tailwindcss": "^2.2.16"
   }
 }

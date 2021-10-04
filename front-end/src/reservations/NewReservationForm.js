@@ -1,8 +1,17 @@
 import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { createReservation } from "../utils/api.js";
+import { today, asDateString } from "../utils/date-time.js";
+import moment from "moment";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function NewReservationForm() {
+  const [newDate, setNewDate] = useState();
+  const [newTime, setNewTime] = useState();
+  const [minTime, setMinTime] = useState();
+  const [disabled, setDisabled] = useState(true);
+
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -13,8 +22,49 @@ export default function NewReservationForm() {
   });
   const history = useHistory();
 
+  async function validateDate(date) {
+    const currDate = Date.parse(new Date());
+    const selectedDate = Date.parse(date);
+
+    const selectedDay = date.getDay();
+
+    console.log({ currDate, selectedDate });
+    if (currDate > selectedDate) {
+      alert("Cannot select past dates.");
+    } else if (selectedDay === 2) {
+      alert("Closed on Tues");
+    } else if (currDate === selectedDate) {
+      setNewDate(date);
+      setMinTime(new Date());
+      setDisabled(false);
+      setNewTime(null);
+    } else {
+      setNewDate(date);
+      setMinTime(new Date().setHours(10, 30));
+      setDisabled(false);
+      setNewTime(null);
+    }
+  }
+
   function handleChange({ target }) {
-    setFormData({ ...formData, [target.name]: target.value });
+    // if (target.name === "reservation_date") {
+    //   if (target.value < today()) {
+    //     alert("Cannot select past dates.");
+    //   }
+    //   if (new Date(target.value).getDay() === 1) {
+    //     alert("Closed on Tues");
+    //   }
+    // }
+    // if (target.name === "reservation_time") {
+    //   // console.log(target.value.getHours());
+    //   // console.log(moment(target.value).format("LT"));
+    //   // console.log(target.value < moment()._i);
+    //   // const selected = new Date(target.value);
+    //   // if (target.value < moment().format("LT")) {
+    //   //   alert("cannot select past time");
+    //   // }
+    // }
+    // setFormData({ ...formData, [target.name]: target.value });
   }
 
   async function submitHandler(e) {
@@ -53,7 +103,6 @@ export default function NewReservationForm() {
               </label>
               <input
                 onChange={handleChange}
-                value={formData.first_name}
                 type="text"
                 name="first_name"
                 id="first_name"
@@ -68,7 +117,6 @@ export default function NewReservationForm() {
               </label>
               <input
                 onChange={handleChange}
-                value={formData.last_name}
                 type="text"
                 name="last_name"
                 id="last_name"
@@ -85,7 +133,6 @@ export default function NewReservationForm() {
             </label>
             <input
               onChange={handleChange}
-              value={formData.mobile_number}
               name="mobile_number"
               type="tel"
               className="form-control"
@@ -98,13 +145,13 @@ export default function NewReservationForm() {
             <label htmlFor="reservation_date" className="form-label">
               Date of reservation
             </label>
-            <input
-              onChange={handleChange}
-              value={formData.reservation_date}
+
+            <DatePicker
+              selected={newDate}
+              onChange={(date) => validateDate(date)}
+              filterDate={(date) => date.getDay() !== 2}
+              minDate={new Date()}
               name="reservation_date"
-              type="date"
-              id="reservation_date"
-              className="form-control"
             />
           </div>
 
@@ -116,13 +163,18 @@ export default function NewReservationForm() {
             >
               Time of reservation
             </label>
-            <input
-              onChange={handleChange}
-              value={formData.reservation_time}
+            <DatePicker
+              selected={newTime}
+              onChange={(time) => setNewTime(time)}
+              minTime={minTime}
+              maxTime={new Date().setHours(21, 30)}
+              showTimeSelect
+              showTimeSelectOnly
+              timeIntervals={15}
+              timeCaption="Time"
+              dateFormat="h:mm aa"
+              disabled={disabled}
               name="reservation_time"
-              type="time"
-              id="reservation_time"
-              className="form-control"
             />
           </div>
 
@@ -131,7 +183,7 @@ export default function NewReservationForm() {
 
             <input
               onChange={handleChange}
-              value={formData.people}
+              // value={formData.people}
               type="number"
               id="people"
               name="people"

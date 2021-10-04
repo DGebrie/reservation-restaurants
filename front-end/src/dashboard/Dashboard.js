@@ -68,7 +68,7 @@ export default function Dashboard({ date }) {
 
               <Link
                 to={`/reservations/edit`}
-                class="btn btn-primary"
+                className="btn btn-primary"
                 style={{ size: "24px" }}
               >
                 Edit

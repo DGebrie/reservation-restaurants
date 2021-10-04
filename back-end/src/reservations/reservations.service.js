@@ -1,16 +1,21 @@
 const knex = require("../db/connection");
 
+const tableName = "reservations";
+
 const ReservationsServices = {
   list() {
-    return knex("reservations").select("*");
+    return knex(tableName).select("*");
   },
 
   create(reservation) {
-    return knex("reservations").insert(reservation);
+    return knex(tableName).insert(reservation);
   },
 
   listReservationsByDate(date) {
-    return knex("reservations").select("*").where("reservation_date", date);
+    return knex(tableName)
+      .select("*")
+      .where("reservation_date", date)
+      .orderBy("reservation_time", "asc");
   },
 };
 
