@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { listReservations } from "../utils/api";
+import { listReservations, listTables } from "../utils/api";
 import ErrorAlert from "../layout/ErrorAlert";
 import { Link } from "react-router-dom";
 import EditReservation from "../reservations/EditReservation";
@@ -14,6 +14,7 @@ import moment from "moment";
  */
 export default function Dashboard({ date }) {
   const [reservations, setReservations] = useState([]);
+  const [tables, setTables] = useState([]);
   const [reservationsError, setReservationsError] = useState(null);
   const [newDate, setNewDate] = useState(date);
   useEffect(loadDashboard, [newDate]);
@@ -35,10 +36,10 @@ export default function Dashboard({ date }) {
       .then(setReservations)
       .catch(setReservationsError);
 
+    listTables().then(setTables);
+
     return () => abortController.abort();
   }
-
-  // const reservationsJSX = reservations.map(reservation)
 
   return (
     <main>
@@ -49,35 +50,72 @@ export default function Dashboard({ date }) {
         </h4>
       </div>
       <ErrorAlert error={reservationsError} />
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Time</th>
-            <th>Party Size</th>
-            <th>Mobile Number</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reservations.map((reservation) => (
-            <tr key={reservation.reservation_id}>
-              <td>{`${reservation.first_name} ${reservation.last_name}`}</td>
-              <td>{reservation.reservation_time}</td>
-              <td>{reservation.people}</td>
-              <td>{reservation.mobile_number}</td>
 
-              <Link
-                to={`/reservations/edit`}
-                className="btn btn-primary"
-                style={{ size: "24px" }}
-              >
-                Edit
-              </Link>
-              <button>Delete</button>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="d-flex justify-content-between">
+        <div>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Time</th>
+                <th>Party Size</th>
+                <th>Mobile Number</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reservations.map((reservation) => (
+                <tr key={reservation.reservation_id}>
+                  <td>{`${reservation.first_name} ${reservation.last_name}`}</td>
+                  <td>{reservation.reservation_time}</td>
+                  <td>{reservation.people}</td>
+                  <td>{reservation.mobile_number}</td>
+
+                  <Link
+                    to={`/reservations/edit`}
+                    className="btn btn-primary"
+                    style={{ size: "24px" }}
+                  >
+                    Edit
+                  </Link>
+                  <button>Delete</button>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Table</th>
+                <th>Capacity</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tables.map((table) => (
+                <tr key={table.table_id}>
+                  <td>{table.table_name}</td>
+                  <td>{table.capacity}</td>
+
+                  {/* <Link
+                  to={`/reservations/edit`}
+                  className="btn btn-primary"
+                  style={{ size: "24px" }}
+                > */}
+                  <td>
+                    <button> Edit </button>
+                    {/* </Link> */}
+                    <button>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div className="d-flex justify-content-center">
         <button onClick={previousDay}>Previous</button>
 

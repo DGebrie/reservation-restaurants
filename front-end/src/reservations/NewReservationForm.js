@@ -93,7 +93,7 @@ export default function NewReservationForm() {
     history.push(`/dashboard?date=${formData.reservation_date}`);
   }
   return (
-    <>
+    <div>
       <form onSubmit={submitHandler}>
         <div className="grid">
           <div className="row">
@@ -212,6 +212,6 @@ export default function NewReservationForm() {
           </div>
         </div>
       </form>
-    </>
+    </div>
   );
 }

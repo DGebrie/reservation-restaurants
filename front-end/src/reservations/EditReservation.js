@@ -2,7 +2,7 @@ import React from "react";
 
 import { Link, useHistory } from "react-router-dom";
 
-export default function EditFunction() {
+export default function EditReservation() {
   const history = useHistory();
   return (
     <h1>
