@@ -2,9 +2,6 @@
  * Defines the base URL for the API.
  * The default values is overridden by the `API_BASE_URL` environment variable.
  */
-import formatReservationDate from "./format-reservation-date";
-import formatReservationTime from "./format-reservation-date";
-
 const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
 
@@ -60,156 +57,85 @@ async function fetchJson(url, options, onCancel) {
 
 export async function listReservations(params, signal) {
   const url = new URL(`${API_BASE_URL}/reservations`);
-  Object.entries(params).forEach(([key, value]) =>
-    url.searchParams.append(key, value.toString())
-  );
-  return await fetchJson(url, { headers, signal }, [])
-    .then(formatReservationDate)
-    .then(formatReservationTime);
+
+  if (params) {
+    Object.entries(params).forEach(([key, value]) =>
+      url.searchParams.append(key, value.toString())
+    );
+  }
+
+  return await fetchJson(url, { headers, signal, method: "GET" }, []);
 }
 
 /**
- * Creates a new reservation
- * @returns {Promise<[order]>}
- *  a promise that resolves to the newly created reservation.
+ * Creates a new reservation.
  */
 export async function createReservation(reservation, signal) {
   const url = `${API_BASE_URL}/reservations`;
-  const options = {
-    method: "POST",
-    headers,
-    body: JSON.stringify(reservation),
-    signal,
-  };
-  return await fetchJson(url, options);
+
+  const body = JSON.stringify({ data: reservation });
+
+  return await fetchJson(url, { headers, signal, method: "POST", body }, []);
 }
 
 /**
- * Retrieves all existing reservation.
- * @returns {Promise<[reservation]>}
- *  a promise that resolves to a possibly empty array of reservation saved in the database.
+ * Edits an existing reservation.
  */
+export async function editReservation(reservation_id, reservation, signal) {
+  const url = `${API_BASE_URL}/reservations/${reservation_id}`;
 
-export async function listTables(params, signal) {
-  const url = new URL(`${API_BASE_URL}/tables`);
-  // Object.entries(params).forEach(([key, value]) =>
-  //   url.searchParams.append(key, value.toString())
-  // );
-  return await fetchJson(url, { headers, signal }, []);
+  const body = JSON.stringify({ data: reservation });
+
+  return await fetchJson(url, { headers, signal, method: "PUT", body }, []);
 }
 
 /**
- * Creates a new table
- * @returns {Promise<[dish]>}
- *  a promise that resolves to the newly created table.
+ * Updates a reservation's status.
+ */
+export async function updateReservationStatus(reservation_id, status, signal) {
+  const url = `${API_BASE_URL}/reservations/${reservation_id}/status`;
+
+  const body = JSON.stringify({ data: { status: status } });
+
+  return await fetchJson(url, { headers, signal, method: "PUT", body }, []);
+}
+
+/**
+ * Lists all tables in the database.
+ */
+export async function listTables(signal) {
+  const url = `${API_BASE_URL}/tables`;
+
+  return await fetchJson(url, { headers, signal, method: "GET" }, []);
+}
+
+/**
+ * Creates a new table.
  */
 export async function createTable(table, signal) {
   const url = `${API_BASE_URL}/tables`;
-  const options = {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ data: table }),
-    signal,
-  };
-  return await fetchJson(url, options);
+
+  const body = JSON.stringify({ data: table });
+
+  return await fetchJson(url, { headers, signal, method: "POST", body }, []);
 }
 
 /**
- * Retrieves the order with the specified `orderId`
- * @param orderId
- *  the `id` property matching the desired order.
- * @param signal
- *  optional AbortController.signal
- * @returns {Promise<order>}
- *  a promise that resolves to the saved order.
+ * Seats a reservation at a table.
  */
-export async function readOrder(orderId, signal) {
-  const url = `${API_BASE_URL}/orders/${orderId}`;
-  return await fetchJson(url, { signal });
+export async function seatTable(reservation_id, table_id, signal) {
+  const url = `${API_BASE_URL}/tables/${table_id}/seat`;
+
+  const body = JSON.stringify({ data: { reservation_id: reservation_id } });
+
+  return await fetchJson(url, { headers, signal, method: "PUT", body }, []);
 }
 
 /**
- * Retrieves all existing orders.
- * @returns {Promise<[order]>}
- *  a promise that resolves to a possibly empty array of orders saved in the database.
+ * Finishes a table.
  */
-export async function listOrders(signal) {
-  const url = `${API_BASE_URL}/orders`;
-  return await fetchJson(url, { signal });
-}
+export async function finishTable(table_id, signal) {
+  const url = `${API_BASE_URL}/tables/${table_id}/seat`;
 
-/**
- * Updates a existing order
- * @returns {Promise<[order]>}
- *  a promise that resolves to the update order.
- */
-export async function updateOrder(order, signal) {
-  const url = `${API_BASE_URL}/orders/${order.id}`;
-  const options = {
-    method: "PUT",
-    headers,
-    body: JSON.stringify({ data: order }),
-    signal,
-  };
-  return await fetchJson(url, options);
-}
-
-/**
- * Deletes the order with the specified `orderId`.
- * @param orderId
- *  the id of the order to delete
- * @param signal
- *  optional AbortController.signal
- * @returns {Promise<null|String>}
- *  a promise that resolves to null or an error message.
- */
-export async function deleteOrder(orderId, signal) {
-  const url = `${API_BASE_URL}/orders/${orderId}`;
-  const options = { method: "DELETE", signal };
-  return await fetchJson(url, options);
-}
-
-/**
- * Retrieves the order with the specified `dishId`
- * @param dishId
- *  the `id` property matching the desired dish.
- * @param signal
- *  optional AbortController.signal
- * @returns {Promise<dish>}
- *  a promise that resolves to the saved dish.
- */
-export async function readDish(dishId, signal) {
-  const url = `${API_BASE_URL}/dishes/${dishId}`;
-  return await fetchJson(url, { signal });
-}
-
-/**
- * Updates a existing dish
- * @returns {Promise<[dish]>}
- *  a promise that resolves to the updated dish.
- */
-export async function updateDish(dish, signal) {
-  const url = `${API_BASE_URL}/dishes/${dish.id}`;
-  const options = {
-    method: "PUT",
-    headers,
-    body: JSON.stringify({ data: dish }),
-    signal,
-  };
-  return await fetchJson(url, options);
-}
-
-/**
- * Deletes the order with the specified `dishId`.
- * @param dishId
- *  the id of the order to delete
- * @param signal
- *  optional AbortController.signal
- * @returns {Promise<null|String>}
- *  a promise that resolves to null or an error message.
- */
-export async function deleteDish(dishId, signal) {
-  const url = `${API_BASE_URL}/dishes/${dishId}`;
-  const options = { method: "DELETE", signal };
-  return await fetchJson(url, options);
+  return await fetchJson(url, { headers, signal, method: "DELETE" }, []);
 }

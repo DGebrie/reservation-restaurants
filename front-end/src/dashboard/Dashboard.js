@@ -1,133 +1,147 @@
-import React, { useEffect, useState } from "react";
-import { listReservations, listTables } from "../utils/api";
+import React from "react";
+import { useHistory } from "react-router-dom";
+import { previous, next, today } from "../utils/date-time";
 import ErrorAlert from "../layout/ErrorAlert";
-import { Link } from "react-router-dom";
-import EditReservation from "../reservations/EditReservation";
-
-import moment from "moment";
+import ReservationRow from "./ReservationRow";
+import TableRow from "./TableRow";
 
 /**
  * Defines the dashboard page.
- * @param date
- *  the date for which the user wants to view reservations.
- * @returns {JSX.Element}
  */
-export default function Dashboard({ date }) {
-  const [reservations, setReservations] = useState([]);
-  const [tables, setTables] = useState([]);
-  const [reservationsError, setReservationsError] = useState(null);
-  const [newDate, setNewDate] = useState(date);
-  useEffect(loadDashboard, [newDate]);
+function Dashboard({
+  date,
+  reservations,
+  reservationsError,
+  tables,
+  tablesError,
+  loadDashboard,
+}) {
+  const history = useHistory();
 
-  function previousDay() {
-    const previous = moment(newDate).subtract(1, "days").format();
-    setNewDate(previous);
-  }
+  const reservationsJSX = () => {
+    return reservations.map((reservation) => (
+      <ReservationRow
+        key={reservation.reservation_id}
+        reservation={reservation}
+        loadDashboard={loadDashboard}
+      />
+    ));
+  };
 
-  function nextDay() {
-    const next = moment(newDate).add(1, "days").format();
-    setNewDate(next);
-  }
+  const tablesJSX = () => {
+    return tables.map((table) => (
+      <TableRow
+        key={table.table_id}
+        table={table}
+        loadDashboard={loadDashboard}
+      />
+    ));
+  };
 
-  function loadDashboard() {
-    const abortController = new AbortController();
-    setReservationsError(null);
-    listReservations({ date: newDate }, abortController.signal)
-      .then(setReservations)
-      .catch(setReservationsError);
+  /**
+   * Allows the user to go forward/backward days on the calendar.
+   */
+  function handleClick({ target }) {
+    let newDate;
+    let useDate;
 
-    listTables().then(setTables);
+    if (!date) {
+      useDate = today();
+    } else {
+      useDate = date;
+    }
 
-    return () => abortController.abort();
+    if (target.name === "previous") {
+      newDate = previous(useDate);
+    } else if (target.name === "next") {
+      newDate = next(useDate);
+    } else {
+      newDate = today();
+    }
+
+    history.push(`/dashboard?date=${newDate}`);
   }
 
   return (
-    <main>
+    <tr>
       <h1>Dashboard</h1>
-      <div className="d-md-flex mb-3 justify-content-center">
-        <h4 className="mb-0 justify-content-center">
-          Reservations for {newDate}
-        </h4>
-      </div>
-      <ErrorAlert error={reservationsError} />
 
-      <div className="d-flex justify-content-between">
-        <div>
-          <table className="table">
-            <thead>
+      <tr>
+        <td>
+          <h4 className="mb-0">Reservations for {date}</h4>
+
+          <ErrorAlert error={reservationsError} />
+
+          <table className="table table-hover m-1">
+            <thead className="thead-light">
               <tr>
-                <th>Name</th>
-                <th>Time</th>
-                <th>Party Size</th>
-                <th>Mobile Number</th>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Mobile Number</th>
+                <th scope="col">Date</th>
+                <th scope="col">Time</th>
+                <th scope="col">People</th>
+                {/* <th scope="col">Status</th> */}
+                <th scope="col">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {reservations.map((reservation) => (
-                <tr key={reservation.reservation_id}>
-                  <td>{`${reservation.first_name} ${reservation.last_name}`}</td>
-                  <td>{reservation.reservation_time}</td>
-                  <td>{reservation.people}</td>
-                  <td>{reservation.mobile_number}</td>
 
-                  <Link
-                    to={`/reservations/edit`}
-                    className="btn btn-primary"
-                    style={{ size: "24px" }}
-                  >
-                    Edit
-                  </Link>
-                  <button>Delete</button>
-                </tr>
-              ))}
-            </tbody>
+            <tbody>{reservationsJSX()}</tbody>
           </table>
-        </div>
 
-        <div>
-          <table className="table">
-            <thead>
+          <br />
+          <br />
+
+          <h4 className="mb-0">Tables</h4>
+
+          <ErrorAlert error={tablesError} />
+
+          <table className="table table-hover m-1">
+            <thead className="thead-light">
               <tr>
-                <th>Table</th>
-                <th>Capacity</th>
-                <th>Actions</th>
+                <th scope="col">Table ID</th>
+                <th scope="col">Table Name</th>
+                <th scope="col">Capacity</th>
+                <th scope="col">Status</th>
+                {/* <th scope="col">Reservation ID</th> */}
+                {/* <th scope="col">Finish</th> */}
               </tr>
             </thead>
-            <tbody>
-              {tables.map((table) => (
-                <tr key={table.table_id}>
-                  <td>{table.table_name}</td>
-                  <td>{table.capacity}</td>
 
-                  {/* <Link
-                  to={`/reservations/edit`}
-                  className="btn btn-primary"
-                  style={{ size: "24px" }}
-                > */}
-                  <td>
-                    <button> Edit </button>
-                    {/* </Link> */}
-                    <button>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+            <tbody>{tablesJSX()}</tbody>
           </table>
-        </div>
-      </div>
-
-      <div className="d-flex justify-content-center">
-        <button onClick={previousDay}>Previous</button>
-
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={() => setNewDate(moment().format())}
-        >
-          Today
-        </button>
-        <button onClick={nextDay}>Next</button>
-      </div>
-    </main>
+        </td>
+      </tr>
+      <tr>
+        <td className="d-flex justify-content-center">
+          <button
+            className="btn btn-secondary m-1"
+            type="button"
+            name="previous"
+            onClick={handleClick}
+          >
+            Previous
+          </button>
+          <button
+            className="btn btn-primary m-1"
+            type="button"
+            name="today"
+            onClick={handleClick}
+          >
+            Today
+          </button>
+          <button
+            className="btn btn-secondary m-1"
+            type="button"
+            name="next"
+            onClick={handleClick}
+          >
+            Next
+          </button>
+        </td>
+      </tr>
+    </tr>
   );
 }
+
+export default Dashboard;

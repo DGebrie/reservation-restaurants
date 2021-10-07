@@ -30,16 +30,16 @@ export default function NewTable({ loadDashboard }) {
   /**
    * Whenever a user submits the form, validate and make the API call.
    */
-  async function handleSubmit(e) {
-    e.preventDefault();
+  function handleSubmit(event) {
+    event.preventDefault();
 
     const abortController = new AbortController();
 
-    try {
-      await createTable(formData, abortController.signal);
-      history.push("/dashboard");
-    } catch (error) {
-      console.log(error);
+    if (validateFields()) {
+      createTable(formData, abortController.signal)
+        .then(loadDashboard)
+        .then(() => history.push(`/dashboard`))
+        .catch(setError);
     }
 
     return () => abortController.abort();

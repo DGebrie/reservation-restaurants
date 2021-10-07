@@ -1,217 +1,287 @@
-import React, { useState } from "react";
-import { Link, useHistory } from "react-router-dom";
-import { createReservation } from "../utils/api.js";
-import { today, asDateString } from "../utils/date-time.js";
-import moment from "moment";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import React, { useEffect, useState } from "react";
+import { useHistory, useParams } from "react-router-dom";
+import ErrorAlert from "../layout/ErrorAlert";
+import {
+  createReservation,
+  editReservation,
+  listReservations,
+} from "../utils/api";
 
-export default function NewReservationForm() {
-  const [newDate, setNewDate] = useState();
-  const [newTime, setNewTime] = useState();
-  const [minTime, setMinTime] = useState();
-  const [disabled, setDisabled] = useState(true);
+export default function NewReservation({ loadDashboard, edit }) {
+  const history = useHistory();
+  const { reservation_id } = useParams();
 
+  const [reservationsError, setReservationsError] = useState(null);
+  const [errors, setErrors] = useState([]);
+  const [apiError, setApiError] = useState(null);
   const [formData, setFormData] = useState({
+    // initial (default) data
     first_name: "",
     last_name: "",
     mobile_number: "",
     reservation_date: "",
     reservation_time: "",
-    people: 0,
+    people: "",
   });
-  const history = useHistory();
 
-  async function validateDate(date) {
-    const currDate = Date.parse(new Date());
-    const selectedDate = Date.parse(date);
+  /**
+   * Make an API call to get all reservations if we are editing, filling in the form.
+   */
+  useEffect(() => {
+    if (edit) {
+      if (!reservation_id) return null;
 
-    const selectedDay = date.getDay();
-
-    console.log({ currDate, selectedDate });
-    if (currDate > selectedDate) {
-      alert("Cannot select past dates.");
-    } else if (selectedDay === 2) {
-      alert("Closed on Tues");
-    } else if (currDate === selectedDate) {
-      setNewDate(date);
-      setMinTime(new Date());
-      setDisabled(false);
-      setNewTime(null);
-    } else {
-      setNewDate(date);
-      setMinTime(new Date().setHours(10, 30));
-      setDisabled(false);
-      setNewTime(null);
+      loadReservations()
+        .then((response) =>
+          response.find(
+            (reservation) =>
+              reservation.reservation_id === Number(reservation_id)
+          )
+        )
+        .then(fillFields);
     }
-  }
 
+    function fillFields(foundReservation) {
+      if (!foundReservation || foundReservation.status !== "booked") {
+        return <p>Only booked reservations can be edited.</p>;
+      }
+
+      const date = new Date(foundReservation.reservation_date);
+      const dateString = `${date.getFullYear()}-${(
+        "0" +
+        (date.getMonth() + 1)
+      ).slice(-2)}-${("0" + date.getDate()).slice(-2)}`;
+
+      setFormData({
+        first_name: foundReservation.first_name,
+        last_name: foundReservation.last_name,
+        mobile_number: foundReservation.mobile_number,
+        reservation_date: dateString,
+        reservation_time: foundReservation.reservation_time,
+        people: foundReservation.people,
+      });
+    }
+
+    async function loadReservations() {
+      const abortController = new AbortController();
+      return await listReservations(null, abortController.signal).catch(
+        setReservationsError
+      );
+    }
+  }, [edit, reservation_id]);
+
+  /**
+   * Whenever a user makes a change to the form, update the state.
+   */
   function handleChange({ target }) {
-    // if (target.name === "reservation_date") {
-    //   if (target.value < today()) {
-    //     alert("Cannot select past dates.");
-    //   }
-    //   if (new Date(target.value).getDay() === 1) {
-    //     alert("Closed on Tues");
-    //   }
-    // }
-    // if (target.name === "reservation_time") {
-    //   // console.log(target.value.getHours());
-    //   // console.log(moment(target.value).format("LT"));
-    //   // console.log(target.value < moment()._i);
-    //   // const selected = new Date(target.value);
-    //   // if (target.value < moment().format("LT")) {
-    //   //   alert("cannot select past time");
-    //   // }
-    // }
-    // setFormData({ ...formData, [target.name]: target.value });
+    setFormData({
+      ...formData,
+      [target.name]:
+        target.name === "people" ? Number(target.value) : target.value,
+    });
   }
 
-  async function submitHandler(e) {
-    e.preventDefault();
-
+  /**
+   * Whenever a user submits the form, validate and make the API call.
+   */
+  function handleSubmit(event) {
+    event.preventDefault();
     const abortController = new AbortController();
 
-    const newReservation = {
-      first_name: e.target.first_name.value,
-      last_name: e.target.last_name.value,
-      mobile_number: e.target.mobile_number.value,
-      reservation_date: e.target.reservation_date.value,
-      reservation_time: e.target.reservation_time.value,
-      people: e.target.people.value,
-      created_at: e.target.reservation_date.value,
-      updated_at: e.target.reservation_date.value,
-    };
-
-    try {
-      await createReservation(newReservation, abortController.signal);
-      history.push("/dashboard");
-    } catch (error) {
-      console.log(error);
+    const foundErrors = [];
+    console.log(edit);
+    if (validateFields(foundErrors) && validateDate(foundErrors)) {
+      if (edit) {
+        editReservation(reservation_id, formData, abortController.signal)
+          .then(loadDashboard)
+          .then(() =>
+            history.push(`/dashboard?date=${formData.reservation_date}`)
+          )
+          .catch(setApiError);
+      } else {
+        createReservation(formData, abortController.signal)
+          .then(loadDashboard)
+          .then(() =>
+            history.push(`/dashboard?date=${formData.reservation_date}`)
+          )
+          .catch(setApiError);
+      }
     }
 
-    history.push(`/dashboard?date=${formData.reservation_date}`);
+    setErrors(foundErrors);
+
+    return () => abortController.abort();
   }
+
+  /**
+   * Make sure all fields exist and are filled in correctly.
+   */
+  function validateFields(foundErrors) {
+    for (const field in formData) {
+      if (formData[field] === "") {
+        foundErrors.push({
+          message: `${field.split("_").join(" ")} cannot be left blank.`,
+        });
+      }
+    }
+
+    return foundErrors.length === 0;
+  }
+
+  /**
+   * Make sure the date and time of the reservation works with the restaurant's schedule.
+   */
+  function validateDate(foundErrors) {
+    const reserveDate = new Date(
+      `${formData.reservation_date}T${formData.reservation_time}:00.000`
+    );
+    const todaysDate = new Date();
+
+    if (reserveDate.getDay() === 2) {
+      foundErrors.push({
+        message:
+          "Reservation cannot be made: Restaurant is closed on Tuesdays.",
+      });
+    }
+
+    if (reserveDate < todaysDate) {
+      foundErrors.push({
+        message: "Reservation cannot be made: Date is in the past.",
+      });
+    }
+
+    if (
+      reserveDate.getHours() < 10 ||
+      (reserveDate.getHours() === 10 && reserveDate.getMinutes() < 30)
+    ) {
+      foundErrors.push({
+        message:
+          "Reservation cannot be made: Restaurant is not open until 10:30AM.",
+      });
+    } else if (
+      reserveDate.getHours() > 22 ||
+      (reserveDate.getHours() === 22 && reserveDate.getMinutes() >= 30)
+    ) {
+      foundErrors.push({
+        message:
+          "Reservation cannot be made: Restaurant is closed after 10:30PM.",
+      });
+    } else if (
+      reserveDate.getHours() > 21 ||
+      (reserveDate.getHours() === 21 && reserveDate.getMinutes() > 30)
+    ) {
+      foundErrors.push({
+        message:
+          "Reservation cannot be made: Reservation must be made at least an hour before closing (10:30PM).",
+      });
+    }
+
+    return foundErrors.length === 0;
+  }
+
+  const errorsJSX = () => {
+    return errors.map((error, idx) => <ErrorAlert key={idx} error={error} />);
+  };
+
   return (
-    <div>
-      <form onSubmit={submitHandler}>
-        <div className="grid">
-          <div className="row">
-            <div className="col">
-              <label htmlFor="first_name" className="form-label">
-                First Name
-              </label>
-              <input
-                onChange={handleChange}
-                type="text"
-                name="first_name"
-                id="first_name"
-                className="form-control"
-                placeholder="First name"
-                aria-label="First name"
-              />
-            </div>
-            <div className="col">
-              <label htmlFor="last_name" className="form-label">
-                Last Name
-              </label>
-              <input
-                onChange={handleChange}
-                type="text"
-                name="last_name"
-                id="last_name"
-                className="form-control"
-                placeholder="Last name"
-                aria-label="Last name"
-              />
-            </div>
-          </div>
+    <form>
+      {errorsJSX()}
+      <ErrorAlert error={apiError} />
+      <ErrorAlert error={reservationsError} />
 
-          <div className="mb-3">
-            <label htmlFor="mobile_number" className="form-label">
-              Mobile Number
-            </label>
-            <input
-              onChange={handleChange}
-              name="mobile_number"
-              type="tel"
-              className="form-control"
-              id="mobile_number"
-              placeholder="XXX-XXX-XXXX"
-            />
-          </div>
+      <label className="form-label" htmlFor="first_name">
+        First Name:&nbsp;
+      </label>
+      <input
+        className="form-control"
+        name="first_name"
+        id="first_name"
+        type="text"
+        onChange={handleChange}
+        value={formData.first_name}
+        required
+      />
 
-          <div>
-            <label htmlFor="reservation_date" className="form-label">
-              Date of reservation
-            </label>
+      <label className="form-label" htmlFor="last_name">
+        Last Name:&nbsp;
+      </label>
+      <input
+        className="form-control"
+        name="last_name"
+        id="last_name"
+        type="text"
+        onChange={handleChange}
+        value={formData.last_name}
+        required
+      />
 
-            <DatePicker
-              selected={newDate}
-              onChange={(date) => validateDate(date)}
-              filterDate={(date) => date.getDay() !== 2}
-              minDate={new Date()}
-              name="reservation_date"
-            />
-          </div>
+      <label className="form-label" htmlFor="mobile_number">
+        Mobile Number:&nbsp;
+      </label>
+      <input
+        className="form-control"
+        name="mobile_number"
+        id="mobile_number"
+        type="text"
+        onChange={handleChange}
+        value={formData.mobile_number}
+        required
+      />
 
-          <div>
-            <label
-              htmlFor="reservation_time"
-              name="reservation_time"
-              className="form-label"
-            >
-              Time of reservation
-            </label>
-            <DatePicker
-              selected={newTime}
-              onChange={(time) => setNewTime(time)}
-              minTime={minTime}
-              maxTime={new Date().setHours(21, 30)}
-              showTimeSelect
-              showTimeSelectOnly
-              timeIntervals={15}
-              timeCaption="Time"
-              dateFormat="h:mm aa"
-              disabled={disabled}
-              name="reservation_time"
-            />
-          </div>
+      <label className="form-label" htmlFor="reservation_date">
+        Reservation Date:&nbsp;
+      </label>
+      <input
+        className="form-control"
+        name="reservation_date"
+        id="reservation_date"
+        type="date"
+        onChange={handleChange}
+        value={formData.reservation_date}
+        required
+      />
 
-          <div>
-            <label htmlFor="people">Party Size(1-10):</label>
+      <label className="form-label" htmlFor="reservation_time">
+        Reservation Time:&nbsp;
+      </label>
+      <input
+        className="form-control"
+        name="reservation_time"
+        id="reservation_time"
+        type="time"
+        onChange={handleChange}
+        value={formData.reservation_time}
+        required
+      />
 
-            <input
-              onChange={handleChange}
-              // value={formData.people}
-              type="number"
-              id="people"
-              name="people"
-              min="1"
-              max="10"
-            />
-          </div>
+      <label className="form-label" htmlFor="people">
+        Party Size:&nbsp;
+      </label>
+      <input
+        className="form-control"
+        name="people"
+        id="people"
+        type="number"
+        min="1"
+        onChange={handleChange}
+        value={formData.people}
+        required
+      />
 
-          <div
-            className="d-flex justify-content-between"
-            role="group"
-            aria-label="Basic example"
-          >
-            <button type="submit" className="btn btn-primary">
-              Submit
-            </button>
-
-            <Link
-              to="/"
-              className="btn btn-danger"
-              type="button"
-              onClick={history.goBack}
-            >
-              Cancel
-            </Link>
-          </div>
-        </div>
-      </form>
-    </div>
+      <button
+        className="btn btn-primary m-1"
+        type="submit"
+        onClick={handleSubmit}
+      >
+        Submit
+      </button>
+      <button
+        className="btn btn-danger m-1"
+        type="button"
+        onClick={history.goBack}
+      >
+        Cancel
+      </button>
+    </form>
   );
 }
