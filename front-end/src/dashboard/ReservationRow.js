@@ -6,7 +6,12 @@ import { updateReservationStatus } from "../utils/api";
  * This represents a row of data representing a reservation for a <table>.
  */
 export default function ReservationRow({ reservation, loadDashboard }) {
-  if (!reservation || reservation.status === "finished") return null;
+  if (
+    !reservation ||
+    reservation.status === "finished" ||
+    reservation.status === "cancelled"
+  )
+    return null;
 
   /**
    * This function is called if the user wants to cancel a reservation.
