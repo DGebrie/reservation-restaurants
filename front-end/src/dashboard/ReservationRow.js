@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { updateReservationStatus } from "../utils/api";
+import { KebabHorizontalIcon } from "@primer/octicons-react";
 
 /**
  * This represents a row of data representing a reservation for a <table>.
@@ -51,28 +52,69 @@ export default function ReservationRow({ reservation, loadDashboard }) {
 
       {reservation.status === "booked" && (
         <>
-          <td>
-            <Link to={`/reservations/${reservation.reservation_id}/edit`}>
-              <button className="btn btn-secondary" type="button">
-                Edit
-              </button>
-            </Link>
-
+          <tr>
             <button
-              className="btn btn-danger"
+              class="btn btn-secondary dropdown-toggle"
               type="button"
-              onClick={handleCancel}
-              data-reservation-id-cancel={reservation.reservation_id}
+              id="dropdownMenu2"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
             >
-              Cancel
+              <KebabHorizontalIcon size={16} />
             </button>
 
-            <a href={`/reservations/${reservation.reservation_id}/seat`}>
-              <button className="btn btn-primary" type="button">
-                Seat
-              </button>
-            </a>
-          </td>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+              <a href={`/reservations/${reservation.reservation_id}/seat`}>
+                <button className="dropdown-item" type="button">
+                  Seat
+                </button>
+              </a>
+              {/* <button class="dropdown-item " type="button"> */}
+              <Link to={`/reservations/${reservation.reservation_id}/edit`}>
+                <button className="dropdown-item" type="button">
+                  Edit
+                </button>
+              </Link>
+              {/* </button> */}
+              <Link>
+                <button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={handleCancel}
+                  data-reservation-id-cancel={reservation.reservation_id}
+                >
+                  Cancel
+                </button>
+              </Link>
+            </div>
+
+            {/* <button type="button">
+              <KebabHorizontalIcon size={16} />
+            </button> */}
+            <td>
+              {/* <Link to={`/reservations/${reservation.reservation_id}/edit`}>
+                <button className="btn btn-secondary" type="button">
+                  Edit
+                </button>
+              </Link> */}
+              {/* 
+              <button
+                className="btn btn-danger"
+                type="button"
+                onClick={handleCancel}
+                data-reservation-id-cancel={reservation.reservation_id}
+              >
+                Cancel
+              </button> */}
+
+              {/* <a href={`/reservations/${reservation.reservation_id}/seat`}>
+                <button className="btn btn-primary" type="button">
+                  Seat
+                </button>
+              </a> */}
+            </td>
+          </tr>
         </>
       )}
     </tr>
