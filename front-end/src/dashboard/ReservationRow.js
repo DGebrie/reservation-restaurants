@@ -52,9 +52,9 @@ export default function ReservationRow({ reservation, loadDashboard }) {
 
       {reservation.status === "booked" && (
         <>
-          <tr>
+          {/* <tr>
             <button
-              class="btn btn-secondary dropdown-toggle"
+              className="btn btn-secondary dropdown-toggle"
               type="button"
               id="dropdownMenu2"
               data-toggle="dropdown"
@@ -62,22 +62,22 @@ export default function ReservationRow({ reservation, loadDashboard }) {
               aria-expanded="false"
             >
               <KebabHorizontalIcon size={16} />
-            </button>
+            </button> */}
 
-            <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+          {/* <div className="dropdown-menu" aria-labelledby="dropdownMenu2">
               <a href={`/reservations/${reservation.reservation_id}/seat`}>
                 <button className="dropdown-item" type="button">
                   Seat
                 </button>
               </a>
               {/* <button class="dropdown-item " type="button"> */}
-              <Link to={`/reservations/${reservation.reservation_id}/edit`}>
+          {/* <a href={`/reservations/${reservation.reservation_id}/edit`}>
                 <button className="dropdown-item" type="button">
                   Edit
                 </button>
-              </Link>
+              </a>
               {/* </button> */}
-              <Link>
+          {/* <Link>
                 <button
                   className="dropdown-item"
                   type="button"
@@ -87,34 +87,34 @@ export default function ReservationRow({ reservation, loadDashboard }) {
                   Cancel
                 </button>
               </Link>
-            </div>
+            </div> */}
 
-            {/* <button type="button">
+          {/* <button type="button">
               <KebabHorizontalIcon size={16} />
             </button> */}
-            <td>
-              {/* <Link to={`/reservations/${reservation.reservation_id}/edit`}>
-                <button className="btn btn-secondary" type="button">
-                  Edit
-                </button>
-              </Link> */}
-              {/* 
-              <button
-                className="btn btn-danger"
-                type="button"
-                onClick={handleCancel}
-                data-reservation-id-cancel={reservation.reservation_id}
-              >
-                Cancel
-              </button> */}
+          <td>
+            <Link to={`/reservations/${reservation.reservation_id}/edit`}>
+              <button className="btn btn-secondary" type="button">
+                Edit
+              </button>
+            </Link>
 
-              {/* <a href={`/reservations/${reservation.reservation_id}/seat`}>
-                <button className="btn btn-primary" type="button">
-                  Seat
-                </button>
-              </a> */}
-            </td>
-          </tr>
+            <button
+              className="btn btn-danger"
+              type="button"
+              onClick={handleCancel}
+              data-reservation-id-cancel={reservation.reservation_id}
+            >
+              Cancel
+            </button>
+
+            <a href={`/reservations/${reservation.reservation_id}/seat`}>
+              <button className="btn btn-primary" type="button">
+                Seat
+              </button>
+            </a>
+          </td>
+          {/* </tr> */}
         </>
       )}
     </tr>

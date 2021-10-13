@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router-dom";
+// import { seatReservation } from "../../e2e/api";
 import ErrorAlert from "../layout/ErrorAlert";
 import { listReservations, seatTable } from "../utils/api";
 

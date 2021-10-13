@@ -63,55 +63,52 @@ function Dashboard({
   }
 
   return (
-    <tr>
+    <>
       <h1>Dashboard</h1>
 
-      <tr>
-        <td>
-          <h4 className="mb-0">Reservations for {date}</h4>
+      <h4 className="mb-0">Reservations for {date}</h4>
 
-          <ErrorAlert error={reservationsError} />
+      <ErrorAlert error={reservationsError} />
 
-          <table className="table table-hover m-1">
-            <thead className="thead-light">
-              <tr>
-                <th scope="col">ID</th>
-                <th scope="col">Name</th>
-                <th scope="col">Mobile Number</th>
-                <th scope="col">Date</th>
-                <th scope="col">Time</th>
-                <th scope="col">People</th>
-                {/* <th scope="col">Status</th> */}
-                <th scope="col">Actions</th>
-              </tr>
-            </thead>
+      <table className="table table-hover m-1">
+        <thead className="thead-light">
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Mobile Number</th>
+            <th scope="col">Date</th>
+            <th scope="col">Time</th>
+            <th scope="col">People</th>
+            {/* <th scope="col">Status</th> */}
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
 
-            <tbody>{reservationsJSX()}</tbody>
-          </table>
+        <tbody>{reservationsJSX()}</tbody>
+      </table>
 
-          <br />
-          <br />
+      <br />
+      <br />
 
-          <h4 className="mb-0">Tables</h4>
+      <h4 className="mb-0">Tables</h4>
 
-          <ErrorAlert error={tablesError} />
+      <ErrorAlert error={tablesError} />
 
-          <table className="table table-hover m-1">
-            <thead className="thead-light">
-              <tr>
-                <th scope="col">Table ID</th>
-                <th scope="col">Table Name</th>
-                <th scope="col">Capacity</th>
-                <th scope="col">Status</th>
-                {/* <th scope="col">Reservation ID</th> */}
-                {/* <th scope="col">Finish</th> */}
-              </tr>
-            </thead>
+      <table className="table table-hover m-1">
+        <thead className="thead-light">
+          <tr>
+            <th scope="col">Table ID</th>
+            <th scope="col">Table Name</th>
+            <th scope="col">Capacity</th>
+            <th scope="col">Status</th>
+            {/* <th scope="col">Reservation ID</th> */}
+            {/* <th scope="col">Finish</th> */}
+          </tr>
+        </thead>
 
-            <tbody>{tablesJSX()}</tbody>
-          </table>
-        </td>
-      </tr>
+        <tbody>{tablesJSX()}</tbody>
+      </table>
+
       <tr>
         <td className="d-flex justify-content-center">
           <button
@@ -140,7 +137,7 @@ function Dashboard({
           </button>
         </td>
       </tr>
-    </tr>
+    </>
   );
 }
 

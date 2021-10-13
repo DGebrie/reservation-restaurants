@@ -17,6 +17,13 @@ async function list(req, res) {
   res.json({ data: response });
 }
 
+// async function search(req, res, next) {
+//   const mobile_number = req.query.mobile_number;
+
+//   const match = await service.search(mobile_number);
+
+//   res.json({ data: match });
+// }
 /**
  * Makes sure data object exists.
  */

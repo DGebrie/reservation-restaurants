@@ -13,7 +13,7 @@ function list(date, mobile_number) {
   if (mobile_number) {
     return knex(tableName)
       .select("*")
-      .where("mobile_number", "like", `${mobile_number}`);
+      .where("mobile_number", "like", `${mobile_number}%`);
   }
 
   return knex(tableName).select("*");
@@ -60,4 +60,5 @@ module.exports = {
   read,
   update,
   edit,
+  search,
 };
