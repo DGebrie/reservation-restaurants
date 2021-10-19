@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { updateReservationStatus } from "../utils/api";
-// import { KebabHorizontalIcon } from "@primer/octicons-react";
 
 /**
  * This represents a row of data representing a reservation for a <table>.
