@@ -51,46 +51,6 @@ export default function ReservationRow({ reservation, loadDashboard }) {
 
       {reservation.status === "booked" && (
         <>
-          {/* <tr>
-            <button
-              className="btn btn-secondary dropdown-toggle"
-              type="button"
-              id="dropdownMenu2"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-            >
-              <KebabHorizontalIcon size={16} />
-            </button> */}
-
-          {/* <div className="dropdown-menu" aria-labelledby="dropdownMenu2">
-              <a href={`/reservations/${reservation.reservation_id}/seat`}>
-                <button className="dropdown-item" type="button">
-                  Seat
-                </button>
-              </a>
-              {/* <button class="dropdown-item " type="button"> */}
-          {/* <a href={`/reservations/${reservation.reservation_id}/edit`}>
-                <button className="dropdown-item" type="button">
-                  Edit
-                </button>
-              </a>
-              {/* </button> */}
-          {/* <Link>
-                <button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={handleCancel}
-                  data-reservation-id-cancel={reservation.reservation_id}
-                >
-                  Cancel
-                </button>
-              </Link>
-            </div> */}
-
-          {/* <button type="button">
-              <KebabHorizontalIcon size={16} />
-            </button> */}
           <td>
             <Link to={`/reservations/${reservation.reservation_id}/edit`}>
               <button className="btn btn-secondary" type="button">
@@ -113,7 +73,6 @@ export default function ReservationRow({ reservation, loadDashboard }) {
               </button>
             </a>
           </td>
-          {/* </tr> */}
         </>
       )}
     </tr>
