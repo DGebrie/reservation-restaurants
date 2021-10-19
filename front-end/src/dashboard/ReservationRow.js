@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { updateReservationStatus } from "../utils/api";
-import { KebabHorizontalIcon } from "@primer/octicons-react";
+// import { KebabHorizontalIcon } from "@primer/octicons-react";
 
 /**
  * This represents a row of data representing a reservation for a <table>.
@@ -46,9 +46,9 @@ export default function ReservationRow({ reservation, loadDashboard }) {
       <td>{reservation.reservation_date.substr(0, 10)}</td>
       <td>{reservation.reservation_time.substr(0, 5)}</td>
       <td>{reservation.people}</td>
-      {/* <td data-reservation-id-status={reservation.reservation_id}>
+      <td data-reservation-id-status={reservation.reservation_id}>
         {reservation.status}
-      </td> */}
+      </td>
 
       {reservation.status === "booked" && (
         <>

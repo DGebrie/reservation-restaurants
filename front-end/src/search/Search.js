@@ -38,18 +38,18 @@ export default function Search() {
     );
   };
 
-  function handleCancel() {
-    if (
-      window.confirm(
-        "Do you want to cancel this reservation? This cannot be undone."
-      )
-    ) {
-      window.location.reload();
-    }
-  }
+  // function handleCancel() {
+  //   if (
+  //     window.confirm(
+  //       "Do you want to cancel this reservation? This cannot be undone."
+  //     )
+  //   ) {
+  //     window.location.reload();
+  //   }
+  // }
 
   return (
-    <div>
+    <>
       <form>
         <label htmlFor="mobile_number">Enter a customer's phone number:</label>
         <input
@@ -80,6 +80,6 @@ export default function Search() {
         </thead>
         <tbody>{searchResultsJSX()}</tbody>
       </table>
-    </div>
+    </>
   );
 }

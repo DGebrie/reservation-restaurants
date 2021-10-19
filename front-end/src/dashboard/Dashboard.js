@@ -79,7 +79,7 @@ function Dashboard({
             <th scope="col">Date</th>
             <th scope="col">Time</th>
             <th scope="col">People</th>
-            {/* <th scope="col">Status</th> */}
+            <th scope="col">Status</th>
             <th scope="col">Actions</th>
           </tr>
         </thead>
